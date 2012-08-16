@@ -1,5 +1,5 @@
 # configdich
-## Featuring propriertary technology used widely throughout the porn industry, developed by the makers of TurboOlaf!
+## Featuring propriertary technology developed by the makers of TurboOlaf!
 
 **configdich** is a configuration management system for medium to large-scale deployments of OpenWRT machines. By making use of templating for configuration files and the concept of inheritance also known from object-oriented programming languages, managing a large number of OpenWRT embedded devices, each with its own distinct configuration, becomes a breeze. An example for such an environment would be a
 
