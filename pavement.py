@@ -12,6 +12,16 @@ import yaml
 
 @task
 @cmdopts([("host=", None, "The host for which to build")], share_with=['generate_image'])
+def upgrade(options):
+    call_task('generate_config', options={
+        'host': options.host})
+    call_task('generate_image', options={
+        'host': options.host})
+    call_task('deploy', options={
+        'host': options.host})
+
+@task
+@cmdopts([("host=", None, "The host for which to build")], share_with=['generate_image'])
 def generate_config(options):
     """
     Read the template files and write out the custom config of a host
