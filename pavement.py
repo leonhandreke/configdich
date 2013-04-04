@@ -42,7 +42,8 @@ def generate_config(options):
     template_env = Environment(loader=ConfigdichLoader(target_dir))
 
     build_dir = path('config').joinpath(options.host)
-    # Create the build directory if needed
+    # Clean out the build dir
+    build_dir.rmtree()
     build_dir.makedirs_p()
 
     for config_file_template_path in config_file_template_path_set:
