@@ -26,17 +26,18 @@ def generate_config(options):
     """
     Read the template files and write out the custom config of a host
     """
-    # Get a list of all files that shall be rendered
-    config_file_template_path_set = set()
+    # template name -> file mode
+    config_file_templates = {}
 
     config = get_config(options.host)
     target_dir = path('target')
 
     for parent_files_dir in filter(lambda p: p.exists(),
-            map(lambda p: target_dir.joinpath(p, 'files'), config['parents'])
-            ):
+            [target_dir.joinpath(p, 'files') for p in config['parents']]):
         for config_file in parent_files_dir.walkfiles():
-            config_file_template_path_set.add(parent_files_dir.relpathto(config_file))
+            template_name = parent_files_dir.relpathto(config_file)
+            if template_name not in config_file_templates:
+                config_file_templates[template_name] = config_file.lstat()
 
     # Load Jinja Environment
     template_env = Environment(loader=ConfigdichLoader(target_dir))
@@ -46,13 +47,14 @@ def generate_config(options):
     build_dir.rmtree()
     build_dir.makedirs_p()
 
-    for config_file_template_path in config_file_template_path_set:
-        rendered_config_file_path = build_dir.joinpath(config_file_template_path)
+    for config_file_name, template_file_stat in config_file_templates.items():
+        rendered_config_file_path = build_dir.joinpath(config_file_name)
         # Create the directory that the config file will be rendered to in if needed
         rendered_config_file_path.dirname().makedirs_p()
         # Render the template to the file
-        t = template_env.get_template(options.host + "/" + str(config_file_template_path))
+        t = template_env.get_template(options.host + "/" + str(config_file_name))
         rendered_config_file_path.write_text(t.render(config))
+        rendered_config_file_path.chmod(template_file_stat.st_mode)
 
 @task
 # Configuration must be generated prior to building the image for the same host
