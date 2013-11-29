@@ -66,7 +66,7 @@ def generate_image(options):
     """
     #call_task(generate_config, options=options)
     config = get_config(options.host)
-    build_dir = path('/tmp/configdich/build')
+    build_dir = path('build')
     # Create the build directory if needed
     build_dir.makedirs_p()
 
@@ -75,37 +75,28 @@ def generate_image(options):
     # Create images directory if needed
     host_image_path.makedirs_p()
 
-    # Build up the custom package list for opkg
-    host_packages_string = ''
-    for package in config['opkg_packages']:
-        host_packages_string += package + "  "
-    for package in config['opkg_omit_packages']:
-        host_packages_string += "-" + package + "  "
-
-
     # Build the custom image for this machine including the custom package
     # list and configfiles.
-    image_builder_tar_path = get_image_builder(config)
+    #image_builder_tar_path = get_image_builder(config)
     with pushd(build_dir):
-        host_build_dir = path(options.host)
-        host_build_dir.mkdir()
-        with pushd(options.host):
-            # Only extract the tar if it has not already been extracted
-            if not path(image_builder_tar_path.namebase).exists():
-                sh("tar xf {0}".format(image_builder_tar_path))
-            # cd to the extracted tar
-            with pushd(image_builder_tar_path.namebase):
-                # Build the image using the image builder
-                sh('make image PROFILE="{profile}" FILES="{files}" PACKAGES="{packages}"'.format(
-                    profile=config.get('openwrt_image_builder_profile') or "",
-                    files=host_config_files_path,
-                    packages=host_packages_string)
-                    )
+        if not path('openwrt').exists():
+            sh('git clone git://git.openwrt.org/openwrt.git')
+        with pushd('openwrt'):
+            try:
+                sh('./scripts/feeds update packages')
+                sh('./scripts/feeds install -a')
+                path.copytree(host_config_files_path, 'files')
+                path('files/buildroot-config').move('.config')
+                sh('make defconfig')
+                sh('make prereq')
+                sh('make -j5 # V=s')
 
                 # Copy image to target location
                 built_image_path = path('bin').walkfiles(config['openwrt_image_builder_image_filename']).next()
                 built_image_path.copy(host_image_path)
-        host_build_dir.rmtree()
+            finally:
+                path('files').rmtree()
+                path('.config').remove()
 
 @task
 @cmdopts([("host=", None, "The host for which to build")])
