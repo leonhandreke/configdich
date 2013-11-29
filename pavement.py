@@ -84,7 +84,7 @@ def generate_image(options):
         with pushd('openwrt'):
             try:
                 sh('./scripts/feeds update packages')
-                sh('./scripts/feeds install -a')
+                sh('./scripts/feeds install -a -p packages')
                 path.copytree(host_config_files_path, 'files')
                 path('files/buildroot-config').move('.config')
                 sh('make defconfig')
