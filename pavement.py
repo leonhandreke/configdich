@@ -17,7 +17,7 @@ def upgrade(options):
         'host': options.host})
     call_task('generate_image', options={
         'host': options.host})
-    call_task('deploy', options={
+    call_task('flash', options={
         'host': options.host})
 
 @task
@@ -100,9 +100,9 @@ def generate_image(options):
 
 @task
 @cmdopts([("host=", None, "The host for which to build")])
-def deploy(options):
+def flash(options):
     """
-    Deploy a bundled image to a machine and install it via sysupgrade.
+    Flash a bundled image to a machine and install it via sysupgrade.
     """
     config = get_config(options.host)
     local_host_image_path = path('images').joinpath(options.host, config['openwrt_image_builder_image_filename'])
