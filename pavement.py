@@ -61,7 +61,9 @@ def generate_image(options):
     """
     Generate the image for installation on a machine.
     """
-    #call_task(generate_config, options=options)
+    call_task('generate_config', options={
+        'host': options.host})
+
     config = get_config(options.host)
     build_dir = path('build')
     # Create the build directory if needed
