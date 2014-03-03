@@ -9,9 +9,10 @@ import paramiko
 from paver.easy import *
 import yaml
 
+def host_task(f):
+    return task(cmdopts([("host=", None, "The host for which to build")])(f))
 
-@task
-@cmdopts([("host=", None, "The host for which to build")], share_with=['generate_image'])
+@host_task
 def upgrade(options):
     call_task('generate_config', options={
         'host': options.host})
@@ -20,8 +21,7 @@ def upgrade(options):
     call_task('flash', options={
         'host': options.host})
 
-@task
-@cmdopts([("host=", None, "The host for which to build")], share_with=['generate_image'])
+@host_task
 def generate_config(options):
     """
     Read the template files and write out the custom config of a host
@@ -56,10 +56,7 @@ def generate_config(options):
         rendered_config_file_path.write_text(t.render(config))
         rendered_config_file_path.chmod(template_file_stat.st_mode)
 
-@task
-# Configuration must be generated prior to building the image for the same host
-@needs('generate_config')
-@cmdopts([("host=", None, "The host for which to build")])
+@host_task
 def generate_image(options):
     """
     Generate the image for installation on a machine.
@@ -98,8 +95,7 @@ def generate_image(options):
                 path('files').rmtree()
                 path('.config').remove()
 
-@task
-@cmdopts([("host=", None, "The host for which to build")])
+@host_task
 def flash(options):
     """
     Flash a bundled image to a machine and install it via sysupgrade.
