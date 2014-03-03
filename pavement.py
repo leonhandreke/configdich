@@ -125,6 +125,19 @@ def flash(options):
             ssh.close()
             break
 
+
+@host_task
+def update_config(options):
+    call_task('generate_config', options={
+        'host': options.host})
+
+    host_config_files_path = path('config').joinpath(options.host).abspath()
+    sh("scp -r {} root@{}:/".format(
+        host_config_files_path.joinpath("*"),
+        options.host))
+    sh("ssh {} reboot".format(options.host))
+
+
 def get_config(target):
     """
     Load the configuration for a specific target and include all parent
