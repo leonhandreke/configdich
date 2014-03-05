@@ -135,7 +135,7 @@ def update_config(options):
     sh("scp -r {} root@{}:/".format(
         host_config_files_path.joinpath("*"),
         options.host))
-    sh("ssh {} reboot".format(options.host))
+    sh("ssh root@{} reboot".format(options.host))
 
 
 def get_config(target):
